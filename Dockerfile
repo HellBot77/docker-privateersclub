@@ -6,14 +6,14 @@ RUN git clone https://github.com/privateersclub/wiki.git && \
     ([[ "$TAG" = "latest" ]] || git checkout ${TAG})
     # rm -rf .git
 
-FROM node AS build
+FROM --platform=$BUILDPLATFORM node AS build
 
 WORKDIR /wiki
 COPY --from=base /git/wiki .
 RUN npm install --global pnpm && \
-    pnpm install && \
+    pnpm install --frozen-lockfile && \
     pnpm build
 
-FROM lipanski/docker-static-website
+FROM joseluisq/static-web-server
 
-COPY --from=build /wiki/docs/.vitepress/dist .
+COPY --from=build /wiki/docs/.vitepress/dist ./public
